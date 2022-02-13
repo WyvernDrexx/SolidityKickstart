@@ -34,4 +34,40 @@ describe('Campaigns', () => {
     assert.ok(factory?.options?.address)
     assert.ok(campaign.options.address)
   })
+  it('sets manager as the caller itself', async () => {
+    const manager = await campaign.methods.manager().call()
+    assert.equal(manager, accounts[0])
+  })
+  it('contributes and add the account on approvers', async () => {
+    await campaign.methods.contribute().send({
+      from: accounts[1],
+      value: '200'
+    })
+    const isContributor = await campaign.methods.approvers(accounts[1]).call()
+    assert(isContributor)
+  })
+  it('requires min contribution', async () => {
+    let flag = null
+    try {
+      await campaign.methods.contribute().send({
+        from: accounts[1],
+        value: '5'
+      })
+      // Error was not thrown hence, to flag to false
+      flag = false
+    } catch (error) {
+      // There was an error, hence, set flag to true ie pass
+      flag = true
+    }
+    // if flag is true then, the check is passed
+    assert(flag)
+  })
+  it('allows a manager to create a payment request', async () => {
+    await campaign.methods.createRequest('Buying batteries', '100', accounts[1]).send({
+      from: accounts[0],
+      gas: '1000000'
+    })
+    const request = await campaign.methods.requests(0).call()
+    assert.equal('Buying batteries', request.description)
+  })
 })
