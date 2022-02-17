@@ -70,4 +70,5 @@ describe('Campaigns', () => {
     const request = await campaign.methods.requests(0).call()
     assert.equal('Buying batteries', request.description)
   })
+  
 })
